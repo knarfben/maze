@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <link rel="stylesheet" type="text/css" href="/mazing.css" />
+
+    <div id="maze_container"><!-- --></div>
+
+    <script src="/maze-builder.js"></script>
+    <script>
+      const MAZE_CONTAINER = 4;
+      let Maze = new MazeBuilder(MAZE_CONTAINER, MAZE_CONTAINER);
+      // Maze.placeKey();
+      Maze.display("maze_container");
+      // console.log({ Maze });
+      // window.onload = function () {
+      //   clock = setInterval(game, 500);
+      // };
+      game().then((ret) => {
+        // if (ret) {
+        //   alert("Bravo !!");
+        // } else {
+        //   alert("Maze not solved :(");
+        // }
+        alert(`elements dans la file : ${ret}`);
+      });
+
+      // Maze.display("maze_container");
+
+      async function game() {
+        // Maze.display("maze_container");
+        // BFS
+        // on initialize la file
+        q = [];
+        // on part de l'entree
+        q.push([Maze.entrance[0], Maze.entrance[1]]);
+        while (q.length) {
+          // console.log({ longueurQueue: q.length });
+
+          step = q.shift();
+          mazeStep = Maze.mazeJS[step[0]][step[1]];
+          // process is pas visite deja
+          if (!mazeStep.includes("footsteps")) {
+            // process step et marque comme 'vu'
+            mazeStep.push("footsteps");
+            // console.log({ mazeStep });
+            Maze.display("maze_container");
+          }
+          if (!(mazeStep.includes("door") && mazeStep.includes("exit"))) {
+            // cherche les voisins pour les ajoute a la q si pas deja visite
+            voisins = getNeighbours([step[0], step[1]]);
+            for (let i = 0; i < voisins.length; i++) {
+              const v = voisins[i];
+              if (!Maze.mazeJS[v[0]][v[1]].includes("footsteps")) {
+                q.push(v);
+              }
+            }
+          } else {
+            return q.length;
+          }
+          await new Promise((r) => setTimeout(r, 200));
+        }
+        return 0;
+      }
+
+      function getNeighbours(c) {
+        neighbours = [];
+        m = Maze.mazeJS;
+        // console.log({ orig: c });
+
+        // regarde les 4 directions
+        // au dessus
+        newc = c[0] - 1;
+        // console.log({ dessus: { vertical: newc, horizontal: c[1] } });
+        if (newc >= 0 && !m[newc][c[1]].includes("wall")) {
+          neighbours.push([newc, c[1]]);
+        }
+
+        // au dessous
+        newc = c[0] + 1;
+        // console.log({ dessous: { vertical: newc, horizontal: c[1] } });
+        if (newc < m.length && !m[newc][c[1]].includes("wall")) {
+          neighbours.push([newc, c[1]]);
+        }
+
+        // a gauche
+        newc = c[1] - 1;
+        // console.log({ gauche: { vertical: c[0], horizontal: newc } });
+        if (newc >= 0 && !m[c[0]][newc].includes("wall")) {
+          neighbours.push([c[0], newc]);
+        }
+
+        // a droite
+        newc = c[1] + 1;
+        // console.log({ droite: { vertical: c[0], horizontal: newc } });
+        if (newc < m.length && !m[c[0]][newc].includes("wall")) {
+          neighbours.push([c[0], newc]);
+        }
+
+        return neighbours;
+      }
+    </script>
+  </body>
+</html>
